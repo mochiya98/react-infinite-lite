@@ -1,0 +1,65 @@
+{
+  "name": "@mochiya98/react-infinite-lite",
+  "version": "0.1.0",
+  "description": "lightweight alternative to react-infinite",
+  "author": "YukimasaFunaoka <yukimasafunaoka@gmail.com>",
+  "license": "MIT",
+  "keywords": [
+    "react",
+    "react-component",
+    "scrolling",
+    "uitableview",
+    "infinite"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mochiya98/react-infinite-lite"
+  },
+  "homepage": "https://github.com/mochiya98/react-infinite-lite",
+  "main": "dist/index.umd.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "unpkg": "dist/index.umd.js",
+  "source": "src/index.tsx",
+  "mangle": {
+    "regex": "^_"
+  },
+  "files": [
+    "src",
+    "dist"
+  ],
+  "dependencies": {},
+  "peerDependencies": {
+    "react": "^16.x"
+  },
+  "devDependencies": {
+    "@types/react": "^16.8.8",
+    "@types/react-dom": "^16.8.3",
+    "@typescript-eslint/eslint-plugin": "^1.5.0",
+    "@typescript-eslint/parser": "^1.5.0",
+    "eslint": "^5.15.3",
+    "eslint-config-prettier": "^4.1.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-node": "^8.0.1",
+    "eslint-plugin-prettier": "^3.0.1",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-react": "^7.12.4",
+    "eslint-plugin-standard": "^4.0.0",
+    "microbundle": "^0.11.0",
+    "object-assign-deep": "^0.4.0",
+    "prettier": "^1.16.4",
+    "react": "^16.8.5",
+    "react-dom": "^16.8.5",
+    "typescript": "^3.3.4000"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "npm run lint:eslint && npm run lint:tsc",
+    "lint:eslint": "npx eslint --ext js,jsx,ts,tsx src",
+    "lint:tsc": "npx tsc --noEmit",
+    "build": "npx microbundle --name=ReactInfiniteLite",
+    "watch": "npx microbundle --name=ReactInfiniteLite watch",
+    "prepack": "npm run build"
+  }
+}
