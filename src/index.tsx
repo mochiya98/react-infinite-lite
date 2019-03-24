@@ -118,7 +118,7 @@ class Infinite extends Component<InfiniteProps, InfiniteState> {
         ...Infinite._computeVisibleIndex(
           nextProps,
           prevState._scrollTop,
-          prevState._elementHeights
+          _elementHeights
         ),
         _elementHeights,
         _isInfiniteLoading: nextProps.isInfiniteLoading,
