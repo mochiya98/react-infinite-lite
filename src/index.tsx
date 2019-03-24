@@ -4,7 +4,7 @@ const enum InfiniteEnums {
   CONTAINER_HEIGHT_SCALE_FACTOR = "containerHeightScaleFactor",
 }
 
-type InfiniteProps = React.PropsWithChildren<{
+export type InfiniteProps = React.PropsWithChildren<{
   children: ReactNode[];
   className?: string;
   containerHeight: number;
