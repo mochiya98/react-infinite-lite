@@ -1,0 +1,15 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+.infinite-wrapper {
+  border: 2px solid #f09;
+  margin: 10px;
+}
+.infinite-wrapper > div > div {
+  background-color: #9cf;
+  overflow: hidden;
+}
+.infinite-wrapper > div > div.odd {
+  background-color: #fc9;
+}
