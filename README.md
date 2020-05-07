@@ -2,7 +2,7 @@
 
 [![@mochiya98/react-infinite-lite](https://img.shields.io/npm/v/@mochiya98/react-infinite-lite.svg?style=flat-square)](https://www.npmjs.com/package/@mochiya98/react-infinite-lite) [![gzip size](http://img.badgesize.io/https://unpkg.com/@mochiya98/react-infinite-lite/dist/index.esm.js?compression=gzip&style=flat-square)](https://unpkg.com/@mochiya98/react-infinite-lite/dist/index.esm.js) ![license MIT](https://img.shields.io/badge/license-MIT-green.svg?style=flat-square)
 
-> lightweight alternative to [react-infinite](https://www.npmjs.com/package/react-infinite)
+> super lightweight alternative to [react-infinite](https://www.npmjs.com/package/react-infinite)
 
 ## Unsupported features
 
@@ -15,7 +15,10 @@
 
 - `optionalHeader: ReactNode` - add fixed header
 
-## ToDo
+## Changelog
 
-- [ ] check preloadAdditionalHeight behavior
-- [ ] add tests
+### 0.2.0 - 2020-05-07
+
+- rewrite with hooks
+- add tests
+- fix elementHeight behavior
