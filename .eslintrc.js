@@ -1,10 +1,11 @@
-const objectAssignDeep = require(`object-assign-deep`);
 module.exports = {
-  plugins: ["react", "prettier"],
+  parser: "babel-eslint",
+  plugins: ["react", "prettier", "chai-friendly"],
   extends: [
     "standard",
     "plugin:react/recommended",
     "plugin:prettier/recommended",
+    "plugin:chai-friendly/recommended",
   ],
   rules: {
     "linebreak-style": ["error", "unix"],
@@ -26,24 +27,28 @@ module.exports = {
     ],
   },
   overrides: [
-    objectAssignDeep(
-      {},
-      require("@typescript-eslint/eslint-plugin").configs.recommended,
-      {
-        files: ["**/*.{ts,tsx}"],
-        parserOptions: { loggerFn: false },
-        rules: {
-          "@typescript-eslint/indent": ["off"],
-          "@typescript-eslint/interface-name-prefix": ["error", "always"],
-          "@typescript-eslint/no-unused-vars": ["warn"],
-          "@typescript-eslint/prefer-interface": ["off"],
-          "@typescript-eslint/explicit-member-accessibility": ["off"],
-          "@typescript-eslint/no-explicit-any": ["off"],
-          "no-unused-vars": ["off"],
-          "promise/param-names": ["off"],
-        },
-      }
-    ),
+    {
+      files: ["**/*.{ts,tsx}"],
+      extends: ["plugin:@typescript-eslint/recommended"],
+      parserOptions: { loggerFn: false },
+      rules: {
+        "prefer-const": ["warn"],
+        "@typescript-eslint/indent": ["off"],
+        "@typescript-eslint/interface-name-prefix": ["error", "always"],
+        "@typescript-eslint/no-unused-vars": ["warn"],
+        "@typescript-eslint/prefer-interface": ["off"],
+        "@typescript-eslint/explicit-member-accessibility": ["off"],
+        "@typescript-eslint/no-explicit-any": ["off"],
+        "no-unused-vars": ["off"],
+        "promise/param-names": ["off"],
+      },
+    },
+    {
+      files: ["**/*.{test,spec}.{js,jsx,ts,tsx}"],
+      env: {
+        mocha: true,
+      },
+    },
   ],
   env: {
     browser: true,
