@@ -5,6 +5,7 @@ const expect = chai.expect;
 const path = require("path");
 const fileUrl = require("file-url");
 const { cases } = require("./fixtures/cases");
+const Infinite = require("../dist/index");
 
 class InfiniteChecker {
   ecNodeIdsSet = new Set();
@@ -272,5 +273,16 @@ describe("puppeteer testing", function () {
         }
       });
     });
+  });
+});
+describe("Infinite.containerHeightScaleFactor", function () {
+  it("should return valid scaleFactor object", () => {
+    for (let i = 0; i < 3; i++) {
+      const n = 1 + Math.random() * 2;
+      expect(Infinite.containerHeightScaleFactor(n)).to.deep.equal({
+        type: "chsf",
+        amount: n,
+      });
+    }
   });
 });

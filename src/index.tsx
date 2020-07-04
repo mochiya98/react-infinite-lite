@@ -8,7 +8,7 @@ import React, {
 } from "react";
 
 const enum InfiniteEnums {
-  CONTAINER_HEIGHT_SCALE_FACTOR = "containerHeightScaleFactor",
+  CONTAINER_HEIGHT_SCALE_FACTOR = "chsf",
 }
 
 export type InfiniteProps = React.PropsWithChildren<{
@@ -207,5 +207,14 @@ function Infinite(props: InfiniteProps): ReactNode {
     </div>
   );
 }
+
+Infinite.containerHeightScaleFactor = (
+  factor: number
+): ContainerHeightScaleFactor => {
+  return {
+    type: InfiniteEnums.CONTAINER_HEIGHT_SCALE_FACTOR,
+    amount: factor,
+  };
+};
 
 export default Infinite;
