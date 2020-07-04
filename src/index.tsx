@@ -1,4 +1,5 @@
 import React, {
+  ReactElement,
   ReactNode,
   useMemo,
   useState,
@@ -136,7 +137,7 @@ function useInfiniteLoader(
   return _isInfiniteLoading;
 }
 
-function Infinite(props: InfiniteProps): ReactNode {
+function Infinite(props: InfiniteProps): ReactElement {
   const {
     children,
     className,
