@@ -4,30 +4,37 @@ const chai = require("chai");
 const expect = chai.expect;
 const path = require("path");
 const fileUrl = require("file-url");
-const { cases } = require("./fixtures/cases");
+const { cases, checkScrollPositions } = require("./fixtures/cases");
 const Infinite = require("../dist/index");
+
+function px2number(px) {
+  if (!px.match(/^[0-9]+(?:\.[0-9]+)?px$/)) {
+    throw new Error(`invalid pixel value: "${px}"`);
+  }
+  return parseFloat(px.slice(0, -2));
+}
 
 class InfiniteChecker {
   ecNodeIdsSet = new Set();
-  onIdleTimeout = 0;
-  onIdleCallbacks = [];
+  onceIdleTimeout = 0;
+  onceIdleCallbacks = [];
   page = null;
-  onIdle(cb) {
-    this.onIdleCallbacks.push(cb);
-  }
 
+  onceIdle(cb) {
+    this.onceIdleCallbacks.push(cb);
+  }
   fireIdle() {
-    for (const cb of this.onIdleCallbacks) {
+    for (const cb of this.onceIdleCallbacks) {
       cb();
     }
-    this.onIdleCallbacks = [];
+    this.onceIdleCallbacks = [];
   }
 
   async attatch(page) {
     this.page = page;
     await this.page.exposeFunction("onUpdateDOM", () => {
-      clearTimeout(this.onIdleTimeout);
-      this.onIdleTimeout = setTimeout(() => this.fireIdle(), 700);
+      clearTimeout(this.onceIdleTimeout);
+      this.onceIdleTimeout = setTimeout(() => this.fireIdle(), 700);
     });
     await this.page.evaluate(() => {
       var observer = new MutationObserver((mutations) => {
@@ -41,12 +48,11 @@ class InfiniteChecker {
       });
     });
   }
-
   async waitIdle() {
-    clearTimeout(this.onIdleTimeout);
-    this.onIdleTimeout = setTimeout(() => this.fireIdle(), 700);
+    clearTimeout(this.onceIdleTimeout);
+    this.onceIdleTimeout = setTimeout(() => this.fireIdle(), 700);
     await new Promise((resolve) => {
-      this.onIdle(resolve);
+      this.onceIdle(resolve);
     });
     this.ecNodeIdsSet.clear();
     (
@@ -56,31 +62,60 @@ class InfiniteChecker {
     ).map((id) => this.ecNodeIdsSet.add(id));
   }
 
-  isVisible(key, idx) {
+  setVirtualizeTesterScrollTop(pos) {
+    return this.page.evaluate((pos) => {
+      [...document.getElementsByClassName("virtualize-test-wrapper")].forEach(
+        (c) => {
+          c.scrollTop = pos;
+        }
+      );
+    }, pos);
+  }
+  setInfiniteLoadTesterScrollTop(pos) {
+    return this.page.evaluate((pos) => {
+      this.document.querySelector(
+        ".ec-infinite-load-fire-test-wrapper"
+      ).scrollTop = pos;
+    }, pos);
+  }
+
+  getItemVisible(key, idx) {
     return this.ecNodeIdsSet.has(`ec-${key}-${idx}`);
   }
 
-  assertRangeVisible(key, startIdx, endIdx) {
-    expect(
-      this.isVisible(key, startIdx - 1),
-      `${key}[${startIdx - 1}] must not visible`
-    ).to.be.false;
-    expect(this.isVisible(key, startIdx), `${key}[${startIdx}] must visible`).to
-      .be.true;
-    expect(this.isVisible(key, endIdx), `${key}[${endIdx}] must visible`).to.be
-      .true;
-    expect(
-      this.isVisible(key, endIdx + 1),
-      `${key}[${endIdx + 1}] must not visible`
-    ).to.be.false;
+  getScrollHeight(envKey) {
+    return this.page.evaluate(
+      (envKey) =>
+        document.querySelector(`.ec-${envKey}-wrapper>div`).scrollHeight,
+      envKey
+    );
+  }
+  getWrapperPaddings(envKey) {
+    return this.page.evaluate((envKey) => {
+      const { paddingTop, paddingBottom } = window.getComputedStyle(
+        document.querySelector(`.ec-${envKey}-wrapper>div`)
+      );
+      return { paddingTop, paddingBottom };
+    }, envKey);
+  }
+
+  getInfiniteLoadFired() {
+    return this.page.evaluate(
+      () =>
+        document.querySelector(".infinite-load-fired").textContent === "true"
+    );
+  }
+  getHandleScrollFired() {
+    return this.page.evaluate(
+      () =>
+        document.querySelector(".handle-scroll-fired").textContent === "true"
+    );
   }
 }
 
 describe("puppeteer testing", function () {
-  // mochaのタイムアウトを無しに設定する（defalut:2000ms.
   this.timeout(0);
   let browser, page, infiniteChecker;
-  // テスト実行前処理.
   before(async function () {
     browser = await puppeteer.launch({
       executablePath: chromePaths.chrome,
@@ -118,162 +153,101 @@ describe("puppeteer testing", function () {
   describe("infinite loading", function () {
     describe("check spinner", function () {
       it("hidden when idle", async function () {
-        expect(
-          await page.evaluate(
-            () =>
-              !!document.querySelector(".ec-spinner-test-idle-wrapper .spinner")
-          )
-        ).to.be.false;
+        const spinner = await page.$(".ec-spinner-test-idle-wrapper .spinner");
+        expect(spinner).to.be.null;
       });
       it("visible when loading", async function () {
-        expect(
-          await page.evaluate(
-            () =>
-              !!document.querySelector(
-                ".ec-spinner-test-loading-wrapper .spinner"
-              )
-          )
-        ).to.be.true;
+        const spinner = await page.$(
+          ".ec-spinner-test-loading-wrapper .spinner"
+        );
+        expect(spinner).to.be.ok;
       });
     });
     describe("check load event", function () {
-      const getInfiniteLoadFired = () =>
-        page.evaluate(
-          () =>
-            document.querySelector(".infinite-load-fired").textContent ===
-            "true"
-        );
-      const getHandleScrollFired = () =>
-        page.evaluate(
-          () =>
-            document.querySelector(".handle-scroll-fired").textContent ===
-            "true"
-        );
       it("not fired at first", async function () {
-        expect(await getInfiniteLoadFired()).to.be.false;
-        expect(await getHandleScrollFired()).to.be.false;
+        expect(await infiniteChecker.getInfiniteLoadFired()).to.be.false;
+        expect(await infiniteChecker.getHandleScrollFired()).to.be.false;
       });
       // infinite-load-fire-test
       it("not fired at scrollTop=299", async function () {
-        await page.evaluate(() => {
-          document.querySelector(
-            ".ec-infinite-load-fire-test-wrapper"
-          ).scrollTop = 299;
-        });
+        await infiniteChecker.setInfiniteLoadTesterScrollTop(299);
         await infiniteChecker.waitIdle();
-        expect(await getInfiniteLoadFired()).to.be.false;
-        expect(infiniteChecker.isVisible("infinite-load-fire-test", 1)).to.be
-          .false;
-        expect(await getHandleScrollFired()).to.be.true;
+        expect(await infiniteChecker.getInfiniteLoadFired()).to.be.false;
+        expect(infiniteChecker.getItemVisible("infinite-load-fire-test", 1)).to
+          .be.false;
+        expect(await infiniteChecker.getHandleScrollFired()).to.be.true;
       });
       it("fired at scrollTop=300", async function () {
-        await page.evaluate(() => {
-          document.querySelector(
-            ".ec-infinite-load-fire-test-wrapper"
-          ).scrollTop = 300;
-        });
+        await infiniteChecker.setInfiniteLoadTesterScrollTop(300);
         await infiniteChecker.waitIdle();
-        expect(await getInfiniteLoadFired()).to.be.true;
-        expect(infiniteChecker.isVisible("infinite-load-fire-test", 1)).to.be
-          .true;
+        expect(await infiniteChecker.getInfiniteLoadFired()).to.be.true;
+        expect(infiniteChecker.getItemVisible("infinite-load-fire-test", 1)).to
+          .be.true;
       });
     });
   });
-  describe("atTop", function () {
-    describe("check visibility", function () {
-      for (const {
-        envName,
-        envKey,
-        atTop: [from, to],
-      } of cases) {
-        it(envName, async function () {
-          infiniteChecker.assertRangeVisible(envKey, from, to);
-        });
-      }
-    });
-    describe("check scrollHeights", function () {
-      it("all scrollHeight must be 6560", async function () {
-        const heights = await page.evaluate(() =>
-          [...document.querySelectorAll("virtualize-test-wrapper>div")].map(
-            (c) => c.scrollheight
-          )
-        );
-        for (const height of heights) {
-          expect(height).to.be(6560);
+  for (const pos of checkScrollPositions) {
+    describe(`at${pos}`, function () {
+      before(async function () {
+        await infiniteChecker.setVirtualizeTesterScrollTop(pos);
+        await infiniteChecker.waitIdle();
+      });
+      describe("check visibility", function () {
+        for (const {
+          envName,
+          envKey,
+          [`at${pos}`]: {
+            visibleRange: [from, to],
+          },
+        } of cases) {
+          it(envName, async function () {
+            expect(
+              infiniteChecker.getItemVisible(envKey, from - 1),
+              `${envKey}[${from - 1}] must not visible`
+            ).to.be.false;
+            expect(
+              infiniteChecker.getItemVisible(envKey, from),
+              `${envKey}[${from}] must visible`
+            ).to.be.true;
+            expect(
+              infiniteChecker.getItemVisible(envKey, to),
+              `${envKey}[${to}] must visible`
+            ).to.be.true;
+            expect(
+              infiniteChecker.getItemVisible(envKey, to + 1),
+              `${envKey}[${to + 1}] must not visible`
+            ).to.be.false;
+          });
+        }
+      });
+      describe("check paddings", async function () {
+        for (const {
+          envName,
+          envKey,
+          [`at${pos}`]: {
+            paddings: [expectedPaddingTop, expectedPaddingBottom],
+          },
+        } of cases) {
+          it(envName, async function () {
+            const {
+              paddingTop,
+              paddingBottom,
+            } = await infiniteChecker.getWrapperPaddings(envKey);
+            expect(px2number(paddingTop)).to.equal(expectedPaddingTop);
+            expect(px2number(paddingBottom)).to.equal(expectedPaddingBottom);
+          });
+        }
+      });
+      describe("check scrollHeight", function () {
+        for (const { envName, envKey } of cases) {
+          it(envName, async function () {
+            const scrollHeight = await infiniteChecker.getScrollHeight(envKey);
+            expect(scrollHeight).to.equal(6560);
+          });
         }
       });
     });
-  });
-  describe("at500", function () {
-    before(async function () {
-      await page.evaluate(() => {
-        [...document.getElementsByClassName("virtualize-test-wrapper")].forEach(
-          (c) => {
-            c.scrollTop = 500;
-          }
-        );
-      });
-      await infiniteChecker.waitIdle();
-    });
-    describe("check visibility", function () {
-      for (const {
-        envName,
-        envKey,
-        at500: [from, to],
-      } of cases) {
-        it(envName, async function () {
-          infiniteChecker.assertRangeVisible(envKey, from, to);
-        });
-      }
-    });
-    describe("check scrollHeights", function () {
-      it("all scrollHeight must be 6560", async function () {
-        const heights = await page.evaluate(() =>
-          [...document.querySelectorAll("virtualize-test-wrapper>div")].map(
-            (c) => c.scrollheight
-          )
-        );
-        for (const height of heights) {
-          expect(height).to.be(6560);
-        }
-      });
-    });
-  });
-  describe("at3000", function () {
-    before(async function () {
-      await page.evaluate(() => {
-        [...document.getElementsByClassName("virtualize-test-wrapper")].forEach(
-          (c) => {
-            c.scrollTop = 3000;
-          }
-        );
-      });
-      await infiniteChecker.waitIdle();
-    });
-    describe("check visibility", function () {
-      for (const {
-        envName,
-        envKey,
-        at3000: [from, to],
-      } of cases) {
-        it(envName, async function () {
-          infiniteChecker.assertRangeVisible(envKey, from, to);
-        });
-      }
-    });
-    describe("check scrollHeights", function () {
-      it("all scrollHeight must be 6560", async function () {
-        const heights = await page.evaluate(() =>
-          [...document.querySelectorAll("virtualize-test-wrapper>div")].map(
-            (c) => c.scrollheight
-          )
-        );
-        for (const height of heights) {
-          expect(height).to.be(6560);
-        }
-      });
-    });
-  });
+  }
 });
 describe("Infinite.containerHeightScaleFactor", function () {
   it("should return valid scaleFactor object", () => {

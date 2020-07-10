@@ -64,6 +64,11 @@ const virtualizeTestNodes = cases.map(({ envKey, envType, options }) => {
 function App() {
   const [isInfiniteLoadFired, setIsInfiniteLoadFired] = useState(false);
   const [isHandleScrollFired, setIsHandleScrollFired] = useState(false);
+  const loadingSpinnerDelegate = React.createElement(
+    "div",
+    { className: "spinner" },
+    ""
+  );
   return React.createElement("div", {}, [
     ...virtualizeTestNodes,
     makeTestInfinite(
@@ -80,19 +85,11 @@ function App() {
       }
     ),
     makeTestInfinite("spinner-test-idle", [100], {
-      loadingSpinnerDelegate: React.createElement(
-        "div",
-        { className: "spinner" },
-        ""
-      ),
+      loadingSpinnerDelegate,
       isInfiniteLoading: false,
     }),
     makeTestInfinite("spinner-test-loading", [100], {
-      loadingSpinnerDelegate: React.createElement(
-        "div",
-        { className: "spinner" },
-        ""
-      ),
+      loadingSpinnerDelegate,
       isInfiniteLoading: true,
     }),
     React.createElement(

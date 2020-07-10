@@ -8,15 +8,15 @@
     if (v !== undefined) window.TestCases = v;
   }
 })(function (exports) {
-  const cases = [
+  exports.cases = [
     {
       envName: "same, pah=null(2x)",
       envKey: "same",
       envType: "same",
       options: {},
-      atTop: [0, 9],
-      at500: [20, 34],
-      at3000: [145, 159],
+      at0: { visibleRange: [0, 9], paddings: [0, 6360] },
+      at500: { visibleRange: [20, 34], paddings: [400, 5860] },
+      at3000: { visibleRange: [145, 159], paddings: [2900, 3360] },
     },
     {
       envName: "same, pah=0",
@@ -25,9 +25,9 @@
       options: {
         preloadAdditionalHeight: 0,
       },
-      atTop: [0, 4],
-      at500: [25, 29],
-      at3000: [150, 154],
+      at0: { visibleRange: [0, 4], paddings: [0, 6460] },
+      at500: { visibleRange: [25, 29], paddings: [500, 5960] },
+      at3000: { visibleRange: [150, 154], paddings: [3000, 3460] },
     },
     {
       envName: "same, pah={amount:2(3x)}",
@@ -36,19 +36,19 @@
       options: {
         preloadAdditionalHeight: { amount: 2 },
       },
-      atTop: [0, 14],
-      at500: [15, 39],
-      at3000: [140, 164],
+      at0: { visibleRange: [0, 14], paddings: [0, 6260] },
+      at500: { visibleRange: [15, 39], paddings: [300, 5760] },
+      at3000: { visibleRange: [140, 164], paddings: [2800, 3260] },
     },
     {
       envName: "inc",
       envKey: "inc",
       envType: "inc",
       options: {},
-      atTop: [0, 19],
-      at500: [25, 39],
-      at3000: [145, 159],
+      at0: { visibleRange: [0, 19], paddings: [0, 6350] },
+      at500: { visibleRange: [25, 39], paddings: [325, 5740] },
+      at3000: { visibleRange: [145, 159], paddings: [2785, 3280] },
     },
   ];
-  exports.cases = cases;
+  exports.checkScrollPositions = [0, 500, 3000];
 });
