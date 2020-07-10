@@ -114,11 +114,7 @@ function useInfiniteLoader(
   );
   const elementsFullHeight = useMemo(() => {
     let elementsFullHeight = 0;
-    for (
-      let i = 0, elementsCount = _elementHeights.length;
-      i < elementsCount;
-      i++
-    ) {
+    for (let i = 0; i < _elementHeights.length; i++) {
       elementsFullHeight += _elementHeights[i];
     }
     return elementsFullHeight;
@@ -127,7 +123,7 @@ function useInfiniteLoader(
   useEffect(() => {
     if (infiniteLoadBeginEdgeOffset !== undefined && !_isInfiniteLoading) {
       const remainingHeight = elementsFullHeight - scrollTop - containerHeight;
-      if ((infiniteLoadBeginEdgeOffset as number) >= remainingHeight) {
+      if (infiniteLoadBeginEdgeOffset >= remainingHeight) {
         if (onInfiniteLoad) onInfiniteLoad();
         setIsInfiniteLoading(true);
       }
@@ -150,15 +146,13 @@ function Infinite(props: InfiniteProps): ReactElement {
   const refContainer = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
   const onScroll = useCallback(() => {
-    /* eslint-disable @typescript-eslint/no-non-null-assertion */
     if (handleScroll) handleScroll(refContainer.current!);
     setScrollTop(refContainer.current!.scrollTop);
-    /* eslint-enable @typescript-eslint/no-non-null-assertion */
   }, [handleScroll]);
   const normalizedElementHeights = useMemo(() => {
     if (typeof elementHeight === "number") {
       const _elementHeights = [];
-      for (let i = children.length; i--; ) {
+      for (let i = 0; i < children.length; i++) {
         _elementHeights.push(elementHeight);
       }
       return _elementHeights;
