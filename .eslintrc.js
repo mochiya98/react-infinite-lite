@@ -1,5 +1,5 @@
 module.exports = {
-  parser: "babel-eslint",
+  parser: "@typescript-eslint/parser",
   plugins: ["react", "prettier", "chai-friendly"],
   extends: [
     "standard",
@@ -9,6 +9,7 @@ module.exports = {
   ],
   rules: {
     "linebreak-style": ["error", "unix"],
+    "lines-between-class-members": ["off"],
     "react/jsx-filename-extension": [
       1,
       {
@@ -30,11 +31,9 @@ module.exports = {
     {
       files: ["**/*.{ts,tsx}"],
       extends: ["plugin:@typescript-eslint/recommended"],
-      parserOptions: { loggerFn: false },
       rules: {
         "prefer-const": ["warn"],
         "@typescript-eslint/indent": ["off"],
-        "@typescript-eslint/interface-name-prefix": ["error", "always"],
         "@typescript-eslint/no-unused-vars": ["warn"],
         "@typescript-eslint/prefer-interface": ["off"],
         "@typescript-eslint/explicit-member-accessibility": ["off"],

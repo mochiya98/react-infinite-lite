@@ -22,7 +22,7 @@ export type InfiniteProps = React.PropsWithChildren<{
   isInfiniteLoading?: boolean;
   loadingSpinnerDelegate?: ReactNode;
   optionalHeader?: ReactNode;
-  onInfiniteLoad?: Function;
+  onInfiniteLoad?: () => void;
   handleScroll?: (container: HTMLDivElement) => void;
   timeScrollStateLastsForAfterUserScrolls?: number;
 }>;
@@ -146,8 +146,10 @@ function Infinite(props: InfiniteProps): ReactElement {
   const refContainer = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
   const onScroll = useCallback(() => {
+    /* eslint-disable @typescript-eslint/no-non-null-assertion */
     if (handleScroll) handleScroll(refContainer.current!);
     setScrollTop(refContainer.current!.scrollTop);
+    /* eslint-enable @typescript-eslint/no-non-null-assertion */
   }, [handleScroll]);
   const normalizedElementHeights = useMemo(() => {
     if (typeof elementHeight === "number") {
